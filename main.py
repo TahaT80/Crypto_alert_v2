@@ -6,7 +6,7 @@ from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 import requests
 
 # تنظیمات
-TELEGRAM_TOKEN = "8158643934:AAEGKx9DGpo9K5ih1BVGIyNVU6HQmA81dd8"
+TELEGRAM_TOKEN = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
 ALERTS_FILE = "alerts.json"
 sent_alerts = set()
 
