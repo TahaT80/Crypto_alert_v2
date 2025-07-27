@@ -6,7 +6,7 @@ from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 import requests
 
 # تنظیمات
-TELEGRAM_TOKEN = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+TELEGRAM_TOKEN = "XXXXXXXXXX:XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"  # توکن تلگرام خود را اینجا قرار دهید
 ALERTS_FILE = "alerts.json"
 sent_alerts = set()
 
@@ -95,18 +95,30 @@ async def delete_alert(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def check_alerts(bot: Bot):
     while True:
         alerts = load_alerts()
+        updated_alerts = {}
+
         for chat_id, user_alerts in alerts.items():
+            remaining_alerts = []
             for alert in user_alerts:
                 price = get_price(alert["symbol"])
                 if price is None:
+                    remaining_alerts.append(alert)
                     continue
+
                 condition = (alert["Goal"] == "U" and price >= alert["target"]) or \
                             (alert["Goal"] == "D" and price <= alert["target"])
-                key = f"{chat_id}:{alert['ID']}"
-                if condition and key not in sent_alerts:
+
+                if condition:
                     msg = f"🎯 {alert['symbol']} رسید به {price} (هدف: {alert['target']})"
                     await bot.send_message(chat_id=int(chat_id), text=msg)
-                    sent_alerts.add(key)
+                    # هشدار فرستاده شد و حذف میشه
+                else:
+                    remaining_alerts.append(alert)  # هشدار هنوز معتبره
+
+            if remaining_alerts:
+                updated_alerts[chat_id] = remaining_alerts
+
+        save_alerts(updated_alerts)
         await asyncio.sleep(15)
 
 # اجرای اصلی بدون asyncio.run()
